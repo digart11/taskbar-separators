@@ -1,5 +1,14 @@
 # Taskbar Separators
 
+## Preview
+![Taskbar Separators preview](images/taskbar-separators-preview.jpg)
+
+## Settings
+![Taskbar Separators settings](images/taskbar-separators-settings.jpg)
+
+## Alternate setup
+![Taskbar Separators alternate setup](images/taskbar-separators-alt.jpg)
+
 Add clean, customizable separators between application buttons on the
 Windows 11 taskbar.
 
