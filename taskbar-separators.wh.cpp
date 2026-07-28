@@ -11,8 +11,17 @@
 // @compilerOptions -lole32 -loleaut32 -lruntimeobject
 // ==/WindhawkMod==
 
-// Source code is published under the GNU General Public License v3.0.
-// Taskbar hook infrastructure is derived from Taskbar Labels for Windows 11 by m417z.
+// Copyright (C) 2026 digART
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// any later version.
+//
+// Taskbar hook and UI-thread infrastructure includes code adapted from
+// Windhawk mods by Michael Maltsev (m417z), including Taskbar Labels
+// for Windows 11.
+
 
 // ==WindhawkModReadme==
 /*
