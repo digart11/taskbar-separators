@@ -78,9 +78,8 @@ This affects animation appearance only and does not affect normal static separat
 
 ## Compatibility
 
-- Windows 11
-- Standard horizontal taskbars
-- Vertical taskbars provided by compatible customization mods, not yet tested
+- Windows 11 horizontal taskbars
+- Vertical taskbars via Vertical Taskbar for Windows 11
 - Compatible with Windows 11 Taskbar Styler in normal configurations
 
 The separators are visual overlays. They do not create native taskbar items or reserve additional layout space between application buttons.
