@@ -1,8 +1,8 @@
 // ==WindhawkMod==
 // @id              taskbar-separators
-// @name            Taskbar Separators
+// @name            Taskbar Separators vX.X
 // @description     Add customizable visual separators between Windows 11 taskbar application buttons.
-// @version         1.2.0
+// @version         1.X.X
 // @author          digART
 // @github          https://github.com/digart11
 // @license         GPL-3.0
@@ -44,6 +44,7 @@ preview](https://raw.githubusercontent.com/digart11/taskbar-separators/master/im
 ## Features
 
 - Add multiple separators at configurable taskbar positions
+- Position can be either a number or an application name
 - Optional separator before the first application button
 - Live position and appearance updates
 - Nine configurable visual styles:
@@ -60,6 +61,11 @@ preview](https://raw.githubusercontent.com/digart11/taskbar-separators/master/im
 variable-width buttons
 - Supports mixed multi-monitor layouts, such as labels on one taskbar and
 icon-only buttons on another
+
+## What's new in 1.X.X
+- Added support to locate separator based on application name (e.g. Calculator, File Explorer)
+- Added support to change location by using prefixes "+" for before (to the left) and "+-" for before and after (to both the left and right)  
+  Example: "+-File Explorer" to add separators on each side of File Explorer
 
 ## What's new in 1.2.0
 
@@ -90,6 +96,22 @@ Numbered positions place separators after application buttons:
 - Position `1` places a separator after the first application button
 - Position `2` places a separator after the second application button
 - Position `3` places a separator after the third application button
+
+String positions place separators after matching application buttons:
+
+- Position `Calculator` places a separator after Calculator application button
+- Position `File Explorer` places a separator after the File Explorer application button
+- Position `Word` places a separator after the Microsoft Word application button
+
+Position can be modified to before or both before and after instead of after the buttons:  
+- "+" for `before` (to the left)  
+- "+-" for `before` **and** `after` (to both the left and right)
+
+Position examples:
+- Position `8` places a separator *after* the eighth application button
+- Position `+4` places a separator *before* the fourth application button
+- Position `+File Explorer` places a separator *before* the File Explorer application button
+- Position `+-Calculator` places a separator *before* ***and*** *after* the Calculator application button
 
 Enable **Separator before first app** to place a separator before the first
 application button.
@@ -209,9 +231,9 @@ Windows 11, Taskbar Multirow, and Windows 11 Taskbar Styler.
   $name: Separator before first app
   $description: Show a separator before the first taskbar application button.
 - separators:
-  - 3
+    - '3'
   $name: Separators
-  $description: Application button positions after which to place dividers.
+  $description: Application button positions after which to place dividers. Prefix with + for before and +- for before and after. Enter a position index (e.g. 3) or process name.
 - cornerRadius: 2
   $name: Corner radius
   $description: Rounded style corner radius in pixels, from 0 to 12.
@@ -238,12 +260,16 @@ Windows 11, Taskbar Multirow, and Windows 11 Taskbar Styler.
 #include <winrt/Windows.Foundation.Collections.h>
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.UI.Core.h>
+#include <winrt/Windows.UI.Xaml.Data.h>      // ++New++ //
+#include <winrt/Windows.UI.Xaml.Automation.h>  // ++New++ //
 #include <winrt/Windows.UI.Xaml.Controls.h>
 #include <winrt/Windows.UI.Xaml.Input.h>
 #include <winrt/Windows.UI.Xaml.Media.h>
 #include <winrt/Windows.UI.Xaml.Shapes.h>
 #include <winrt/Windows.UI.h>
 #include <winrt/base.h>
+#include <Windows.h>  // ++New++ //
+
 
 #include <algorithm>
 #include <atomic>
@@ -255,6 +281,8 @@ Windows 11, Taskbar Multirow, and Windows 11 Taskbar Styler.
 #include <string>
 #include <string_view>
 #include <vector>
+
+#include <filesystem> // ++New++ //
 
 using namespace winrt::Windows::UI::Xaml;
 
@@ -298,6 +326,8 @@ enum class DividerStyle {
 struct SeparatorSettings {
     size_t settingsIndex = 0;
     int position = 3;
+    std::wstring appName;
+    bool before = 0;
 };
 
 struct Settings {
@@ -434,6 +464,202 @@ struct TrackedTaskbarState {
     int nativeSettlingStableFrames = 0;
     AnimationClock::time_point nativeSettlingStarted{};
 };
+
+struct TaskbarAppDetails {
+    std::wstring exeName;      // e.g. "chrome.exe"
+    std::wstring displayName;  // e.g. "Google Chrome"
+    std::wstring aumid;        // e.g. "Microsoft.WindowsTerminal_8wekyb3d8bbwe!App"
+    std::wstring fullPath;     // e.g. "C:\Program Files\Google\Chrome\Application\chrome.exe"
+};
+
+bool ContainsIgnoreCase(std::wstring_view source, std::wstring_view target) {
+    if (target.empty() || source.empty()) return false;
+    auto it = std::search(
+        source.begin(), source.end(),
+        target.begin(), target.end(),
+        [](wchar_t ch1, wchar_t ch2) {
+            return std::towlower(ch1) == std::towlower(ch2);
+        }
+    );
+    return it != source.end();
+}
+
+bool IsMatch(const TaskbarAppDetails& details, std::wstring_view searchPattern) {
+    if (searchPattern.empty()) return false;
+
+    // 1. Match against Executable name (e.g., "chrome.exe" or "chrome")
+    if (!details.exeName.empty() && ContainsIgnoreCase(details.exeName, searchPattern)) {
+        return true;
+    }
+
+    // 2. Match against App Display Name (e.g., "Google Chrome")
+    if (!details.displayName.empty() && ContainsIgnoreCase(details.displayName, searchPattern)) {
+        return true;
+    }
+
+    // 3. Match against AUMID (e.g., "Microsoft.WindowsTerminal_8wekyb3d8bbwe!App")
+    if (!details.aumid.empty() && ContainsIgnoreCase(details.aumid, searchPattern)) {
+        return true;
+    }
+
+    return false;
+}
+
+// --- Helper: Strip Windows 11 Taskbar Accessibility Suffixes ---
+std::wstring CleanDisplayName(std::wstring name) {
+    if (name.empty()) return name;
+
+    // 1. Cut at " - " if followed by status text (e.g. "App - 1 running window pinned")
+    size_t pos = name.rfind(L" - ");
+    if (pos != std::wstring::npos) {
+        std::wstring suffix = name.substr(pos);
+        std::wstring lowerSuffix = suffix;
+        std::transform(lowerSuffix.begin(), lowerSuffix.end(), lowerSuffix.begin(), ::towlower);
+
+        if (lowerSuffix.find(L"running") != std::wstring::npos ||
+            lowerSuffix.find(L"pinned") != std::wstring::npos ||
+            lowerSuffix.find(L"window") != std::wstring::npos) {
+            name = name.substr(0, pos);
+        }
+    }
+
+    // Helper for case-insensitive end-of-string matching
+    auto endsWithIgnoreCase = [](const std::wstring& str, const std::wstring& suffix) {
+        if (str.length() < suffix.length()) return false;
+        std::wstring endPart = str.substr(str.length() - suffix.length());
+        for (size_t i = 0; i < suffix.length(); ++i) {
+            if (std::towlower(endPart[i]) != std::towlower(suffix[i])) return false;
+        }
+        return true;
+    };
+
+    // 2. Strip direct trailing words without dashes (e.g. "Jira pinned", "Jira (pinned)")
+    const std::wstring trailingSuffixes[] = {
+        L" pinned",
+        L" running",
+        L" - pinned",
+        L" - running",
+        L" (pinned)",
+        L" (running)",
+        L" [pinned]",
+        L" [running]"
+    };
+
+    bool trimmed = true;
+    while (trimmed) {
+        trimmed = false;
+        for (const auto& suf : trailingSuffixes) {
+            if (endsWithIgnoreCase(name, suf)) {
+                name = name.substr(0, name.length() - suf.length());
+                trimmed = true;
+            }
+        }
+    }
+
+    // 3. Trim trailing spaces, dashes, or commas left behind
+    while (!name.empty() && (name.back() == L' ' || name.back() == L'-' || name.back() == L',')) {
+        name.pop_back();
+    }
+
+    return name;
+}
+
+// Dynamic Property Reader using Data::ICustomPropertyProvider
+winrt::hstring GetStringProperty(winrt::Windows::Foundation::IInspectable const& obj, wchar_t const* propName) {
+    if (!obj) return L"";
+
+    if (auto provider = obj.try_as<Data::ICustomPropertyProvider>()) {
+        if (auto prop = provider.GetCustomProperty(winrt::hstring(propName))) {
+            if (auto val = prop.GetValue(obj)) {
+                // 1. Direct hstring
+                if (auto str = val.try_as<winrt::hstring>()) {
+                    return *str;
+                }
+                // 2. Explicit IStringable implementation
+                if (auto stringable = val.try_as<winrt::Windows::Foundation::IStringable>()) {
+                    return stringable.ToString();
+                }
+                // 3. If property returned a nested object (e.g., AppId object), inspect its inner fields
+                if (auto nestedProvider = val.try_as<Data::ICustomPropertyProvider>()) {
+                    const wchar_t* subProps[] = { L"Id", L"Value", L"Path", L"Key", L"Aumid" };
+                    for (auto subProp : subProps) {
+                        if (auto subPropObj = nestedProvider.GetCustomProperty(winrt::hstring(subProp))) {
+                            if (auto subVal = subPropObj.GetValue(val)) {
+                                if (auto str = subVal.try_as<winrt::hstring>()) return *str;
+                                if (auto stringable = subVal.try_as<winrt::Windows::Foundation::IStringable>()) return stringable.ToString();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return L"";
+}
+
+// --- Taskbar Button Details Extractor ---
+TaskbarAppDetails GetTaskbarButtonDetails(FrameworkElement const& button) {
+    TaskbarAppDetails details;
+    if (!button) return details;
+
+    // A. Query DataContext properties
+    if (auto dataContext = button.DataContext()) {
+        // Expanded property names used across Win11 taskbar builds
+        const wchar_t* appIdProps[] = { L"AppId", L"Aumid", L"AppUserModelId", L"UserModelId", L"Identity", L"ItemKey", L"Key" };
+        for (auto prop : appIdProps) {
+            auto val = GetStringProperty(dataContext, prop);
+            if (!val.empty()) { details.aumid = val.c_str(); break; }
+        }
+
+        const wchar_t* pathProps[] = { L"ExecutablePath", L"FilePath", L"Path", L"TargetFilePath", L"TargetPath", L"LnkPath", L"LocalPath" };
+        for (auto prop : pathProps) {
+            auto val = GetStringProperty(dataContext, prop);
+            if (!val.empty()) {
+                details.fullPath = val.c_str();
+                std::filesystem::path p(details.fullPath);
+                details.exeName = p.filename().wstring();
+                break;
+            }
+        }
+
+        const wchar_t* nameProps[] = { L"DisplayName", L"DisplayText", L"Title", L"Label", L"Name", L"Header" };
+        for (auto prop : nameProps) {
+            auto val = GetStringProperty(dataContext, prop);
+            if (!val.empty()) { details.displayName = val.c_str(); break; }
+        }
+
+        // Fallback: Extract EXE name from AUMID if fullPath wasn't found
+        if (details.exeName.empty() && !details.aumid.empty()) {
+            if (details.aumid.find(L"\\") != std::wstring::npos || details.aumid.find(L".exe") != std::wstring::npos) {
+                std::filesystem::path p(details.aumid);
+                details.exeName = p.filename().wstring();
+            }
+        }
+    }
+
+    // B. Fallback to UI Automation Name
+    if (details.displayName.empty()) {
+        try {
+            winrt::hstring autoName = winrt::Windows::UI::Xaml::Automation::AutomationProperties::GetName(button);
+            if (!autoName.empty()) {
+                details.displayName = autoName.c_str();
+            }
+        } catch (...) {}
+    }
+
+    // C. Fallback to ToolTip
+    if (details.displayName.empty()) {
+        auto tooltipObject = Controls::ToolTipService::GetToolTip(button);
+        if (auto tooltipText = tooltipObject.try_as<winrt::hstring>()) {
+            details.displayName = tooltipText->c_str();
+        }
+    }
+
+    // D. Clean up accessibility suffixes from DisplayName
+    details.displayName = CleanDisplayName(details.displayName);
+
+    return details;
+}
 
 using TrackedTaskbarCollection = std::vector<TrackedTaskbarState>;
 
@@ -591,19 +817,61 @@ void LoadSettings() {
     settings.separatorBeforeFirstApp =
         Wh_GetIntSetting(L"separatorBeforeFirstApp") != 0;
 
-    auto appendSeparator = [&](size_t settingsIndex, int position) {
+    int settingsIndexOffset = 0;
+    auto appendSeparator = [&](size_t settingsIndex, PCWSTR positionStr) {
+        if (!positionStr || !*positionStr) {
+            return;
+        }
+
         SeparatorSettings separator;
-        separator.settingsIndex = settingsIndex;
-        separator.position = std::max(position, 1);
-        settings.separators.push_back(separator);
+
+        separator.settingsIndex = settingsIndex + settingsIndexOffset;
+
+        PCWSTR ptr = positionStr;
+        bool beforeAndAfter = false;
+
+        // Parse and strip leading prefixes
+        if (wcsncmp(ptr, L"+-", 2) == 0) {
+            separator.before = 1;
+            beforeAndAfter = 1;   // Places separator BEFORE and AFTER (Set to false if you strictly want false)
+            ptr += 2;                 // Skip "+-"
+        } else if (ptr[0] == L'+') {
+            separator.before = 1;
+            ptr += 1;                 // Skip "+"
+        }
+        
+        // If the string was only "+" or "+-", ignore it
+        if (!*ptr) {
+            return;
+        }
+
+        // Parse the remaining string (e.g. "5" or "chrome.exe")
+        wchar_t* end;
+        long value = wcstol(ptr, &end, 10);
+        if (*end == L'\0') {
+            separator.position = std::max(1L, value);
+        } else {
+            separator.appName = ptr;  // Stores stripped string (e.g. "chrome.exe")
+        }
+
+        if (beforeAndAfter) {
+            // Add before separator
+            settings.separators.push_back(separator);
+            // Add after separator
+            separator.before = 0;
+            separator.settingsIndex++;
+            settingsIndexOffset++;
+            settings.separators.push_back(separator);
+        }
+        else {
+            settings.separators.push_back(separator);
+        }
     };
 
     for (int index = 0; index < 128; index++) {
-        int position = Wh_GetIntSetting(L"separators[%d]", index);
-        if (position <= 0) {
-            continue;
-        }
-        appendSeparator(static_cast<size_t>(index), position);
+        PCWSTR positionStr = Wh_GetStringSetting(L"separators[%d]", index);
+        appendSeparator(static_cast<size_t>(index), positionStr);
+        Wh_FreeStringSetting(positionStr);
     }
 
     {
@@ -3400,12 +3668,36 @@ ReconcileResult ReconcileTrackedTaskbar(TrackedTaskbarState& taskbar,
                 activeSeparators.push_back(
                     {SeparatorSettings{}, GetBeforeFirstDividerName(), true});
             }
-            for (auto const& separator : settings.separators) {
-                if (std::find(usedPositions.begin(), usedPositions.end(),
-                              separator.position) != usedPositions.end()) {
+
+            for (auto& separator : settings.separators) {
+
+                int position = separator.position;
+
+                if (!separator.appName.empty()) {
+                    position = -1;
+
+                    for (size_t i = 0; i < appButtons.size(); ++i) {
+                        auto button = appButtons[i];
+                        if (!button) continue;
+
+                        // Gather all identifier fields (EXE, Name, AUMID)
+                        TaskbarAppDetails details = GetTaskbarButtonDetails(button);
+
+                        // Check if user setting matches EXE name OR App Display Name OR AUMID
+                        if (IsMatch(details, separator.appName)) {
+                            position = static_cast<int>(i + 1);
+                            break;
+                        }
+                    }
+                }
+                
+                if (separator.before) position--;
+                if (position <= 0 || std::find(usedPositions.begin(), usedPositions.end(), position) != usedPositions.end()) {
                     continue;
                 }
 
+                separator.position = position;
+              
                 usedPositions.push_back(separator.position);
                 activeSeparators.push_back(
                     {separator, GetDividerName(separator.settingsIndex),
