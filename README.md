@@ -7,6 +7,8 @@ Unlike placeholder applications or pinned shortcuts, these separators are
 visual, non-clickable elements. They do not launch programs or occupy normal
 application slots.
 
+Current release: **1.2.0**.
+
 ## Preview
 
 ![Taskbar Separators
@@ -14,28 +16,35 @@ preview](https://raw.githubusercontent.com/digart11/taskbar-separators/master/im
 
 ## Features
 
-* Add multiple separators at configurable taskbar positions
-* Optional separator before the first application button
-* Live position and appearance updates
-* Nine configurable visual styles:
+- Add multiple separators at configurable taskbar positions
+- Optional separator before the first application button
+- Live position and appearance updates
+- Nine configurable visual styles:
 
-  * Fade
-  * Solid
-  * Double
-  * Rounded
-  * Glow
-  * Dot
-  * Ring
-  * Square
-  * Diamond
-* Adjustable physical divider gap, thickness, length, opacity, color, and effect settings
-* Physical divider gaps create real layout space between neighboring taskbar buttons
-* Existing taskbar button margins are preserved and the divider gap is added on top of them
-* Improved positioning after taskbar button drag/reorder
-* Pixel-aligned divider positioning for more consistent rendering
-* Automatic horizontal and vertical taskbar orientation
-* Optional animation compatibility mode
-* Clean removal of divider visuals and added spacing when the mod is disabled
+  - Fade
+  - Solid
+  - Double
+  - Rounded
+  - Glow
+  - Dot
+  - Ring
+  - Square
+  - Diamond
+
+- Correct separator positioning for taskbar labels and uncombined or otherwise variable-width buttons
+- Supports mixed multi-monitor layouts, such as labels on one taskbar and icon-only buttons on another
+
+## What's new in 1.2.0
+
+- Added support for Windows taskbar labels and uncombined application buttons
+- Added accurate separator positioning for variable-width taskbar buttons
+- Added support for mixed layouts across multiple monitors, such as labels on one taskbar and icon-only buttons on another
+- Improved taskbar initialization and multi-monitor reconciliation
+- Improved handling of separator settings containing empty or zero-valued entries
+- Improved before-first separator handling when there is not enough layout information for reliable placement
+- Refined internal margin tracking and cleanup
+
+![Taskbar Separators 1.2.0 with taskbar labels](https://raw.githubusercontent.com/digart11/taskbar-separators/master/images/taskbar-separators-labels.jpg)
 
 ## Getting started
 
@@ -43,15 +52,15 @@ preview](https://raw.githubusercontent.com/digart11/taskbar-separators/master/im
 2. Add separator positions to the **Separators** list.
 3. A position of `3` places a separator after the third application button.
 4. Select a style and adjust its appearance.
-5. Use **Divider Gap** to reserve additional physical space around configured separators.
+5. Use **Divider gap** to reserve additional physical space around configured separators.
 
 ## Position behavior
 
 Numbered positions place separators after application buttons:
 
-* Position `1` places a separator after the first application button
-* Position `2` places a separator after the second application button
-* Position `3` places a separator after the third application button
+- Position `1` places a separator after the first application button-
+- Position `2` places a separator after the second application button
+- Position `3` places a separator after the third application button
 
 Enable **Separator before first app** to place a separator before the first
 application button.
@@ -65,7 +74,7 @@ which icons appear beside a configured separator.
 
 ## Divider gap
 
-The **Divider Gap** setting reserves additional physical space at each configured
+The **Divider gap** setting reserves additional physical space at each configured
 separator position.
 
 The gap is applied only where separators exist. It does not globally increase
@@ -74,7 +83,7 @@ the spacing between all taskbar buttons.
 Existing taskbar button margins are preserved, allowing the gap to work alongside
 normal Windows layout values and compatible taskbar styling mods.
 
-Set **Divider Gap** to `0` to use the original overlay-only behavior.
+Set **Divider gap** to `0` to use the original overlay-only behavior.
 
 ## Settings
 
@@ -99,10 +108,12 @@ separator positioning.
 
 ## Compatibility
 
-* Windows 11 horizontal taskbars
-* Vertical taskbars via Vertical Taskbar for Windows 11
-* Compatible with Windows 11 Taskbar Styler in normal configurations
-* Physical divider gaps are layered on top of existing taskbar button margins
+- Windows 11 horizontal taskbars
+- Vertical taskbars via Vertical Taskbar for Windows 11
+- Compatible with Windows 11 Taskbar Styler in normal configurations
+- Taskbar labels and uncombined or otherwise variable-width taskbar buttons
+- Mixed multi-monitor layouts with different button modes on each taskbar
+- Physical divider gaps are layered on top of existing taskbar button margins
 
 ## License and attribution
 
