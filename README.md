@@ -86,9 +86,21 @@ Examples:
 - `-Notepad` places a separator after Notepad
 - `+-Notepad` places separators before and after Notepad
 
-Plain values such as `3` or `Notepad` continue to place the separator after the target.
+Positions follow the current visual order of taskbar application buttons.
+Opening, closing, pinning, unpinning, or rearranging applications can change
+which icons appear beside a configured numbered separator.
 
-Application-name separators follow the matching application when its taskbar icon is reordered.
+Application-name separators are matched against the taskbar button's accessible
+name (`AutomationProperties.Name`), with tooltip text used as a fallback. The
+accessible name is localized and can include additional status text such as
+running-window counts or pinned state.
+
+Matching is case-insensitive and uses whole-word matching. If more than one
+taskbar button matches a name, the first matching application button is used;
+use a more specific name to disambiguate.
+
+Application-name separators follow the matching application when its taskbar
+icon is reordered. Numbered separators remain tied to visual taskbar positions.
 
 Enable **Separator before first app** to place a separator before the first application button.
 
