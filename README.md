@@ -11,7 +11,7 @@ Current release: **1.3.0**.
 
 ## Preview
 ![Taskbar Separators
-preview](https://raw.githubusercontent.com/digart11/taskbar-separators/master/images/taskbar-separators-preview.jpg)
+preview](https://raw.githubusercontent.com/digart11/taskbar-separators/main/images/taskbar-separators-preview.jpg)
 
 
 ## Features
@@ -124,12 +124,12 @@ adding physical spacing.
 ## Settings
 
 ![Taskbar Separators
-settings](https://raw.githubusercontent.com/digart11/taskbar-separators/master/images/taskbar-separators-settings.jpg)
+settings](https://raw.githubusercontent.com/digart11/taskbar-separators/main/images/taskbar-separators-settings.jpg)
 
 ## Alternate setups
 
 ![Taskbar Separators alternate
-setups](https://raw.githubusercontent.com/digart11/taskbar-separators/master/images/taskbar-separators-alt.jpg)
+setups](https://raw.githubusercontent.com/digart11/taskbar-separators/main/images/taskbar-separators-alt.jpg)
 
 ## Animation compatibility
 
