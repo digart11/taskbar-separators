@@ -1,18 +1,14 @@
 # Taskbar Separators
 
-Add clean, customizable visual separators between application buttons on the
-Windows 11 taskbar.
+Add clean, customizable visual separators between application buttons on the Windows 11 taskbar.
 
-Unlike placeholder applications or pinned shortcuts, these separators are
-visual, non-clickable elements. They do not launch programs or occupy normal
-application slots.
+Unlike placeholder applications or pinned shortcuts, these separators are visual, non-clickable elements. They do not launch programs or occupy normal application slots.
 
-Current release: **1.3.0**.
+**Current release:** 1.3.0
 
 ## Preview
-![Taskbar Separators
-preview](https://raw.githubusercontent.com/digart11/taskbar-separators/main/images/taskbar-separators-preview.jpg)
 
+![Taskbar Separators preview](images/taskbar-separators-preview.jpg)
 
 ## Features
 
@@ -31,14 +27,12 @@ preview](https://raw.githubusercontent.com/digart11/taskbar-separators/main/imag
   - Ring
   - Square
   - Diamond
-- Correct separator positioning for taskbar labels and uncombined or otherwise
-variable-width buttons
-- Supports mixed multi-monitor layouts, such as labels on one taskbar and
-icon-only buttons on another
+- Correct separator positioning for taskbar labels and uncombined or otherwise variable-width buttons
+- Supports mixed multi-monitor layouts, such as labels on one taskbar and icon-only buttons on another
 
-## What's new in 1.3.0
-- Added separator targeting by application name, based on a contribution from
-  `mileso` in PR #2
+## What's New in 1.3.0
+
+- Added separator targeting by application name, based on a contribution from `mileso` in PR #2
 - App-name separators now follow their application when taskbar icons are reordered
 - Added `+` for before-target placement and `-` for after-target placement
 - Added `+-` and `-+` for placing separators on both sides of a target
@@ -47,31 +41,29 @@ icon-only buttons on another
 - Improved separator setting parsing and whitespace handling
 - Fixed before-first placement for first-position targets
 
-## What's new in 1.2.0
+## What's New in 1.2.0
+
 - Added support for Windows taskbar labels and uncombined application buttons
 - Added accurate separator positioning for variable-width taskbar buttons
-- Added support for mixed layouts across multiple monitors, such as labels on
-one taskbar and icon-only buttons on another
+- Added support for mixed layouts across multiple monitors, such as labels on one taskbar and icon-only buttons on another
 - Improved taskbar initialization and multi-monitor reconciliation
 - Improved handling of separator settings containing empty or zero-valued entries
 - Improved before-first separator handling when there is not enough layout information for reliable placement
 - Refined internal margin tracking and cleanup
 
-
-## Getting started
+## Getting Started
 
 1. Open the mod's **Settings** tab.
 2. Add taskbar positions or application names to the **Separators** list.
-3. For example, `3` places a separator after the third application button,
-   while `+Notepad` places one before Notepad.
+3. For example, `3` places a separator after the third application button, while `+Notepad` places one before Notepad.
 4. Select a style and adjust its appearance.
 5. Use **Divider gap** to reserve additional physical space around configured separators.
 
-## Position behavior
+## Position Behavior
 
 Separators can target either a taskbar position or a specific application.
 
-Placement prefixes:
+### Placement Prefixes
 
 - `+` = before
 - `-` = after
@@ -87,60 +79,46 @@ Examples:
 - `+-Notepad` places separators before and after Notepad
 
 Positions follow the current visual order of taskbar application buttons.
-Opening, closing, pinning, unpinning, or rearranging applications can change
-which icons appear beside a configured numbered separator.
 
-Application-name separators are matched against the taskbar button's accessible
-name (`AutomationProperties.Name`), with tooltip text used as a fallback. The
-accessible name is localized and can include additional status text such as
-running-window counts or pinned state.
+Opening, closing, pinning, unpinning, or rearranging applications can change which icons appear beside a configured numbered separator.
 
-Matching is case-insensitive and uses whole-word matching. If more than one
-taskbar button matches a name, the first matching application button is used;
-use a more specific name to disambiguate.
+Application-name separators are matched against the taskbar button's accessible name (`AutomationProperties.Name`), with tooltip text used as a fallback.
 
-Application-name separators follow the matching application when its taskbar
-icon is reordered. Numbered separators remain tied to visual taskbar positions.
+The accessible name is localized and can include additional status text such as running-window counts or pinned state.
+
+Matching is case-insensitive and uses whole-word matching. If more than one taskbar button matches a name, the first matching application button is used; use a more specific name to disambiguate.
+
+Application-name separators follow the matching application when its taskbar icon is reordered. Numbered separators remain tied to visual taskbar positions.
 
 Enable **Separator before first app** to place a separator before the first application button.
 
 Start, Search, Widgets, Task View, and other system buttons are not counted as application buttons.
 
+## Divider Gap
 
-## Divider gap
+The **Divider gap** setting reserves additional physical space at each configured separator position.
 
-The **Divider gap** setting reserves additional physical space at each
-configured separator position.
+The gap is applied only where separators exist. It does not globally increase the spacing between all taskbar buttons.
 
-The gap is applied only where separators exist. It does not globally increase
-the spacing between all taskbar buttons.
+Existing taskbar button margins are preserved, allowing the gap to work alongside normal Windows layout values and compatible taskbar styling mods.
 
-Existing taskbar button margins are preserved, allowing the gap to work
-alongside normal Windows layout values and compatible taskbar styling mods.
-
-Set **Divider gap** to `0` to use overlay-only separator positioning without
-adding physical spacing.
+Set **Divider gap** to `0` to use overlay-only separator positioning without adding physical spacing.
 
 ## Settings
 
-![Taskbar Separators
-settings](https://raw.githubusercontent.com/digart11/taskbar-separators/main/images/taskbar-separators-settings.jpg)
+![Taskbar Separators settings](images/taskbar-separators-settings.jpg)
 
-## Alternate setups
+## Alternate Setups
 
-![Taskbar Separators alternate
-setups](https://raw.githubusercontent.com/digart11/taskbar-separators/main/images/taskbar-separators-alt.jpg)
+![Taskbar Separators alternate setups](images/taskbar-separators-alt.jpg)
 
-## Animation compatibility
+## Animation Compatibility
 
 Static taskbars are fully supported.
 
-The mod can follow icons animated by other taskbar mods, but very fast animation
-may not remain perfectly synchronized because both mods update their visual
-elements independently.
+The mod can follow icons animated by other taskbar mods, but very fast animation may not remain perfectly synchronized because both mods update their visual elements independently.
 
-This affects animation appearance only and does not affect normal static
-separator positioning.
+This affects animation appearance only and does not affect normal static separator positioning.
 
 ## Compatibility
 
@@ -151,10 +129,10 @@ separator positioning.
 - Mixed multi-monitor layouts with different button modes on each taskbar
 - Physical divider gaps are layered on top of existing taskbar button margins
 
-## License and attribution
+## License and Attribution
 
 Licensed under the GNU General Public License v3.0.
 
-Taskbar hook and UI-thread infrastructure includes code and patterns adapted
-from Windhawk mods by Michael Maltsev (m417z), including Taskbar Labels for
-Windows 11, Taskbar Multirow, and Windows 11 Taskbar Styler.
+Taskbar hook and UI-thread infrastructure includes code and patterns adapted from Windhawk mods by Michael Maltsev (m417z), including Taskbar Labels for Windows 11, Taskbar Multirow, and Windows 11 Taskbar Styler.
+
+Application-name targeting and before/after separator placement are based on a contribution from `mileso` in PR #2.
